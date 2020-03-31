@@ -4,8 +4,13 @@ import firebase from "../../firebase";
 import { Segment, Button, Input } from "semantic-ui-react";
 import FileModal from "./FileModal";
 import ProgressBar from "./progressBar";
+
+import { Picker, emojiIndex } from "emoji-mart";
+
+import "emoji-mart/css/emoji-mart.css";
 class MessageForm extends React.Component {
   state = {
+    emojiPicker: false,
     isPrivateChannel: this.props.isPrivateChannel,
     percentUploaded: 0,
     storageRef: firebase.storage().ref(),
@@ -16,7 +21,8 @@ class MessageForm extends React.Component {
     errors: [],
     modal: false,
     uploadState: "",
-    uploadTask: null
+    uploadTask: null,
+    typingRef: firebase.database().ref("typing")
   };
 
   getPath = () => {
@@ -121,7 +127,7 @@ class MessageForm extends React.Component {
 
   sendMessage = () => {
     const { messagesRef } = this.props;
-    const { message, channel } = this.state;
+    const { message, channel, user } = this.state;
 
     if (message) {
       this.setState({ loading: true });
@@ -131,6 +137,7 @@ class MessageForm extends React.Component {
         .set(this.createMessage())
         .then(() => {
           this.setState({ loading: false, message: "", errors: [] });
+          this.removeFromTyping(channel.id, user.uid);
         })
         .catch(err => {
           console.error(err);
@@ -146,18 +153,94 @@ class MessageForm extends React.Component {
     }
   };
 
+  handleKeyDown = (event) => {
+    if ( event.ctrlKey || event.keyCode===13){
+      this.sendMessage()
+    }
+    let { message, typingRef, channel, user } = this.state;
+    if (message) {
+      typingRef
+        .child(channel.id)
+        .child(user.uid)
+        .set(user.displayName);
+    } else {
+      typingRef
+        .child(channel.id)
+        .child(user.uid)
+        .remove();
+    }
+  };
+
+  removeFromTyping = (channelid, useruid) => {
+    this.state.typingRef
+      .child(channelid)
+      .child(useruid)
+      .remove();
+  };
+
+  handleToggleEmojiPicker = () => {
+    console.log("clicked");
+    this.setState({
+      emojiPicker: !this.state.emojiPicker
+    });
+  };
+
+  handleAddEmoji = emoji => {
+    const oldmessage = this.state.message;
+    const newmessage = this.colonToUnicode(`${oldmessage} ${emoji.colons}`);
+    this.setState({
+      message: newmessage,
+      emojiPicker: false
+    });
+    setTimeout(() => {
+      this.messageinputref.focus();
+    }, 0);
+  };
+  colonToUnicode = message => {
+    return message.replace(/:[A-Za-z0-9_+-]+:/g, x => {
+      x = x.replace(/:/g, "");
+      let emoji = emojiIndex.emojis[x];
+      if (typeof emoji !== "undefined") {
+        let unicode = emoji.native;
+        if (typeof unicode !== "undefined") {
+          return unicode;
+        }
+      }
+      x = ":" + x + ":";
+      return x;
+    });
+  };
+
   render() {
-    const { errors, message, loading, modal } = this.state;
+    const { emojiPicker, errors, message, loading, modal } = this.state;
 
     return (
       <Segment className="message__form">
+        {emojiPicker && (
+          <Picker
+            onSelect={this.handleAddEmoji}
+            set="apple"
+            className="emojipicker"
+            title="pick your emoji"
+            emoji="point_up"
+          />
+        )}
+
         <Input
           fluid
+          ref={node => (this.messageinputref = node)}
+          onKeyDown={this.handleKeyDown}
           name="message"
           onChange={this.handleChange}
           value={message}
           style={{ marginBottom: "0.7em" }}
-          label={<Button icon={"add"} />}
+          label={
+            <Button
+              onClick={this.handleToggleEmojiPicker}
+              icon={emojiPicker ? "close" : "add"}
+              content={emojiPicker ? "Close" : null}
+            />
+          }
           labelPosition="left"
           className={
             errors.some(error => error.message.includes("message"))

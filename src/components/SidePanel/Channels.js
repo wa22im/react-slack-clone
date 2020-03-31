@@ -6,6 +6,7 @@ import { Menu, Icon, Modal, Form, Input, Button, Label } from "semantic-ui-react
 
 class Channels extends React.Component {
   state = {
+    typingRef: firebase.database().ref("typing"),
     channel: null,
     messagesRef: firebase.database().ref("messages"),
     notifications: [],
@@ -90,9 +91,11 @@ class Channels extends React.Component {
     this.props.setPrivateChannel(false);
 
     const firstChannel = this.state.channels[0];
+    
+
     if (this.state.firstLoad && this.state.channels.length > 0) {
       this.props.setCurrentChannel(firstChannel);
-      this.setActiveChannel(firstChannel);
+    this.setActiveChannel(firstChannel);
     }
     this.setState({ firstLoad: false });
   };
@@ -138,6 +141,11 @@ class Channels extends React.Component {
 
   changeChannel = channel => {
     this.setActiveChannel(channel);
+   if ( this.state.channel!==null){
+      this.state.typingRef
+    .child( this.state.channel.id)
+    .child(this.state.user.uid)
+    .remove();}
     this.clearNotifications();
     this.props.setCurrentChannel(channel);
     this.props.setPrivateChannel(false);

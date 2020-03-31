@@ -70,10 +70,33 @@ const metadata_reducer = (state = initialMeta, action) => {
     }}
 
 
+    // colors reducer 
+
+const initColorsState ={
+  primaryColor:'#4c3c4c',
+  secondaryColor :'#eee'
+}
+
+const colors_reducer = (state = initColorsState , action)=>{
+
+  switch(action.type){
+    case actionTypes.SET_COLORS :
+      return{
+        primaryColor:action.payload.primarycolor,
+        secondaryColor:action.payload.seccolor
+      }
+      default:
+        return state;
+  }
+
+
+}
+
 const rootReducer = combineReducers({
   metadata: metadata_reducer ,
   user: user_reducer,
-  channel: channel_reducer
+  channel: channel_reducer,
+  colors:colors_reducer
 });
 
 export default rootReducer;

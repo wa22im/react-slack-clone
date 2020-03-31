@@ -11,7 +11,7 @@ body,
   height: 450px;
   overflow-y: scroll;
   padding-bottom: 50px;
-  margin-bottom: 100px;
+  margin-bottom: 110px;
 }
 
 /* MessageForm.js */
@@ -33,3 +33,35 @@ body,
 .message_image{
   padding:2em
 }
+
+/*  color panel js*/ 
+
+
+
+.container {
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  width: 20px;
+}
+.square {
+  width: 0;
+      height: 0;
+      border-top: 20px solid ;
+      
+
+      border-left: 20px solid transparent;
+}
+.overlay {
+  width: 0;
+  height: 0;
+  border-bottom: 20px solid;
+
+  border-right: 20px solid transparent;;
+}
+
+.emojipicker{
+  position: absolute;
+}
+/* animation for typing */
+

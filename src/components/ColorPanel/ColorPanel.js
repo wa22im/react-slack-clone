@@ -1,5 +1,13 @@
 import React from "react";
-import firebase from '../../firebase'
+import firebase from "../../firebase";
+import {
+  setColors
+} from '../../actions'
+
+import{
+  connect 
+}
+from 'react-redux'
 import {
   Sidebar,
   Menu,
@@ -14,8 +22,9 @@ import Slider from "react-color";
 
 class ColorPanel extends React.Component {
   state = {
-    currentUser:this.props.currentUser ,
-    userRef:firebase.database().ref("users"),
+    userColors: [],
+    currentUser: this.props.currentUser,
+    userRef: firebase.database().ref("users"),
     modal: false,
     displayColorPicker: false,
     primarycolorhex: "",
@@ -34,6 +43,22 @@ class ColorPanel extends React.Component {
     }
   };
 
+  componentDidMount() {
+    if (this.state.currentUser) {
+      this.addListner(this.state.currentUser.uid);
+    }
+  }
+
+  addListner = userId => {
+    let userColors = [];
+    this.state.userRef.child(`${userId}/colors`).on("child_added", snap => {
+      userColors.unshift(snap.val());
+      this.setState({
+        userColors
+      });
+    });
+  };
+
   openModel = () => this.setState({ modal: true });
   closeModel = () => this.setState({ modal: false });
   handleChangeCompletePrimary = (color, event) => {
@@ -49,31 +74,60 @@ class ColorPanel extends React.Component {
     });
   };
   handleSaveColor = () => {
-    if (this.state.primarycolorhex!=="" && this.state.secondarycolarhex !=="" ) {
-      this.saveColors(this.state.primarycolorhex , this.state.secondarycolarhex);
+    if (
+      this.state.primarycolorhex !== "" &&
+      this.state.secondarycolarhex !== ""
+    ) {
+      this.saveColors(this.state.primarycolorhex, this.state.secondarycolarhex);
     }
   };
-  saveColors = (primarycolor,secondarycolar) => {
-
-    console.log(primarycolor,secondarycolar)
+  saveColors = (primarycolor, secondarycolar) => {
+    console.log(primarycolor, secondarycolar);
     this.state.userRef
-    .child(`${this.state.currentUser.uid}/colors`)
-    .push()
-    .update({
-      primarycolor,
-      secondarycolar
-    }).then(()=>{
-      console.log('color')
-      this.closeModel()
-    })
-    .catch(err=>{
-      console.error(err)
-    })
+      .child(`${this.state.currentUser.uid}/colors`)
+      .push()
+      .update({
+        primarycolor,
+        secondarycolar
+      })
+      .then(() => {
+        this.closeModel();
+      })
+      .catch(err => {
+        console.error(err);
+      });
   };
 
-  render() {
-    const { modal, primarycolor, secondarycolar } = this.state;
 
+
+  displayUserColors = colors =>
+    colors.length > 0 &&
+    colors.slice(0,5).map((color, index) => (
+      <React.Fragment key={index}>
+        <Divider />
+        <div className="container" 
+        onClick={()=>{
+          this.props.setColors(color.primarycolor,color.secondarycolar)
+        }}
+        >
+          <div className="square"
+          style={{
+            borderTopColor: color.primarycolor
+          }}
+          ></div>
+            <div className="overlay"
+            
+            style={{
+              borderBottomColor: color.secondarycolar
+            }}
+            ></div>
+          
+        </div>
+      </React.Fragment>
+    ));
+
+  render() {
+    const { userColors, modal, primarycolor, secondarycolar } = this.state;
     return (
       <Sidebar
         as={Menu}
@@ -83,8 +137,8 @@ class ColorPanel extends React.Component {
         visible
         width="very thin"
       >
-        <Divider />
         <Button icon="add" size="small" color="blue" onClick={this.openModel} />
+        {this.displayUserColors(userColors)}
         <Modal basic open={modal} onClose={this.closeModel}>
           <Modal.Header> Choose App Colors</Modal.Header>
           <Modal.Content>
@@ -121,4 +175,6 @@ class ColorPanel extends React.Component {
   }
 }
 
-export default ColorPanel;
+export default connect(null , {
+  setColors
+})(ColorPanel);
