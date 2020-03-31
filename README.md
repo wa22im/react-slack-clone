@@ -7,5 +7,7 @@ authentication and registre
 real time chat 
 displaying public channels with group chat sending direct messages and pics  
 private chat between users only and sending direct messages and pics 
-message notifications
+message notifications from channels 
 add favorite channels
+
+Link [devChat](https://slack-react-49f65.firebaseapp.com/login)
