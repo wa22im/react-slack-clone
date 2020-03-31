@@ -1,0 +1,35 @@
+html,
+body,
+.app {
+  height: 100vh;
+  background: #eee;
+  padding: 1em;
+}
+
+/* Messages.js */
+.messages {
+  height: 450px;
+  overflow-y: scroll;
+  padding-bottom: 50px;
+  margin-bottom: 100px;
+}
+
+/* MessageForm.js */
+.message__form {
+  position: fixed !important;
+  bottom: 1em;
+  margin-left: 320px !important;
+  left: 0;
+  right: 1em;
+  z-index: 200;
+}
+
+/* Message.js */
+.message__self {
+  border-left: 2px solid orange;
+  padding-left: 8px;
+}
+
+.message_image{
+  padding:2em
+}
