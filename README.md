@@ -13,8 +13,6 @@ message notifications from channels
 
 uploading and displaying image messages using Firebase Storage
 
-notifications to display new messages in other channels
-
 showing when users are online / offline
 
 searching messages within created channels
